@@ -1,0 +1,1864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MACRO OPS — Market Intelligence Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Mono:wght@400;500&family=Google+Sans+Display:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ── MATERIAL YOU / ANDROID 16 DARK TOKENS ── */
+:root {
+  /* Surface tones — M3 dark scheme */
+  --md-surface:         #0f1117;
+  --md-surface-1:       #151b24;
+  --md-surface-2:       #1a2130;
+  --md-surface-3:       #1e2638;
+  --md-surface-4:       #232d42;
+  --md-outline:         #3a4a5c;
+  --md-outline-var:     #243040;
+
+  /* Primary — electric teal/blue (Android 16 palette) */
+  --md-primary:         #4fc3f7;
+  --md-primary-dim:     #0288d1;
+  --md-on-primary:      #003547;
+  --md-primary-cont:    #004d6b;
+
+  /* Secondary — warm amber */
+  --md-secondary:       #ffb74d;
+  --md-secondary-cont:  #4a3000;
+
+  /* Tertiary — soft violet */
+  --md-tertiary:        #b39ddb;
+
+  /* Error */
+  --md-error:           #f28b82;
+  --md-error-cont:      #5c1b18;
+
+  /* Success green */
+  --md-success:         #81c995;
+  --md-success-cont:    #0a3d1f;
+
+  /* Text */
+  --md-on-surface:      #e1e8f0;
+  --md-on-surface-var:  #8fa3b8;
+  --md-on-surface-dim:  #4d6070;
+
+  /* Shape */
+  --radius-xs:  4px;
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-full:9999px;
+
+  /* Elevation shadows */
+  --elev-1: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --elev-2: 0 3px 8px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3);
+  --elev-3: 0 6px 16px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.3);
+
+  /* Typography */
+  --font-display: 'Google Sans Display', 'Google Sans', system-ui, sans-serif;
+  --font-body:    'Google Sans', system-ui, sans-serif;
+  --font-mono:    'Google Sans Mono', 'Courier New', monospace;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── RIPPLE EFFECT ── */
+@keyframes ripple {
+  to { transform: scale(4); opacity: 0; }
+}
+.ripple-container {
+  position: relative; overflow: hidden;
+}
+.ripple-container::after {
+  content: '';
+  position: absolute; border-radius: 50%;
+  background: rgba(79,195,247,0.2);
+  width: 10px; height: 10px;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  pointer-events: none;
+}
+.ripple-container:active::after {
+  animation: ripple 0.4s ease-out;
+}
+
+/* ── TOP APP BAR (M3 style) ── */
+#app-bar {
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px;
+  background: var(--md-surface-1);
+  border-bottom: 1px solid var(--md-outline-var);
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: var(--elev-1);
+}
+.app-bar-leading {
+  display: flex; align-items: center; gap: 12px;
+}
+.app-bar-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--md-primary-cont);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--md-primary);
+  font-size: 18px; font-weight: 700;
+  flex-shrink: 0;
+}
+.app-bar-title {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 700;
+  color: var(--md-on-surface);
+  letter-spacing: -0.3px;
+}
+.app-bar-subtitle {
+  font-size: 11px; color: var(--md-on-surface-var);
+  letter-spacing: 0.8px; text-transform: uppercase;
+  margin-top: 1px;
+}
+.app-bar-actions {
+  display: flex; align-items: center; gap: 8px;
+}
+#api-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  background: var(--md-surface-3);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--md-outline);
+  font-size: 12px; font-family: var(--font-mono);
+  color: var(--md-on-surface-var);
+  letter-spacing: 0.5px;
+  transition: all 0.3s;
+}
+#api-chip .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--md-on-surface-dim);
+  transition: all 0.3s;
+}
+#api-chip.live .dot { background: var(--md-success); box-shadow: 0 0 6px var(--md-success); }
+#api-chip.live { border-color: var(--md-success); color: var(--md-success); }
+#api-chip.error .dot { background: var(--md-error); }
+#api-chip.error { border-color: var(--md-error); color: var(--md-error); }
+
+.icon-btn {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-full);
+  background: transparent; border: none;
+  color: var(--md-on-surface-var);
+  cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.icon-btn:hover { background: rgba(79,195,247,0.1); color: var(--md-primary); }
+
+/* ── TICKER STRIP ── */
+#ticker-strip {
+  background: var(--md-surface-1);
+  border-bottom: 1px solid var(--md-outline-var);
+  overflow: hidden;
+}
+#ticker-strip table { width: 100%; border-collapse: collapse; }
+#ticker-strip thead th {
+  padding: 6px 16px;
+  font-size: 11px; font-weight: 500;
+  color: var(--md-on-surface-dim);
+  letter-spacing: 1px; text-transform: uppercase;
+  text-align: left; white-space: nowrap;
+  background: var(--md-surface-2);
+  border-bottom: 1px solid var(--md-outline-var);
+}
+#ticker-wrap {
+  overflow-y: auto; max-height: 158px;
+}
+#ticker-wrap::-webkit-scrollbar { width: 4px; }
+#ticker-wrap::-webkit-scrollbar-thumb { background: var(--md-outline); border-radius: 2px; }
+#ticker-table { width: 100%; border-collapse: collapse; }
+#ticker-table td {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--md-outline-var);
+  font-family: var(--font-mono);
+  font-size: 13px; white-space: nowrap;
+}
+#ticker-table tr:hover td { background: rgba(79,195,247,0.04); }
+.t-sym { font-weight: 700; color: var(--md-primary); font-size: 13px; width: 72px; }
+.t-name { color: var(--md-on-surface-var); font-size: 12px; }
+.t-price { font-size: 14px; font-weight: 700; width: 100px; }
+.t-chg { font-size: 12px; width: 85px; }
+.t-pct { font-size: 13px; font-weight: 700; width: 75px; }
+.t-note { font-size: 11px; color: var(--md-on-surface-dim); }
+.up { color: var(--md-success); }
+.dn { color: var(--md-error); }
+.na { color: var(--md-on-surface-dim); }
+
+/* ── BANNER ALERTS ── */
+#alerts { display: flex; flex-direction: column; gap: 1px; }
+.alert {
+  padding: 10px 20px;
+  font-size: 13px; font-weight: 500;
+  display: none; align-items: center; gap: 10px;
+  letter-spacing: 0.2px;
+}
+.alert.show { display: flex; }
+.alert-icon { font-size: 16px; flex-shrink: 0; }
+.a-red   { background: var(--md-error-cont);    color: var(--md-error);    border-left: 3px solid var(--md-error); }
+.a-grn   { background: var(--md-success-cont);  color: var(--md-success);  border-left: 3px solid var(--md-success); }
+.a-amber { background: var(--md-secondary-cont);color: var(--md-secondary);border-left: 3px solid var(--md-secondary); }
+
+/* ── NAV BAR (M3 Navigation Bar) ── */
+#nav {
+  display: flex;
+  background: var(--md-surface-1);
+  border-bottom: 1px solid var(--md-outline-var);
+  overflow-x: auto; padding: 0 8px;
+}
+#nav::-webkit-scrollbar { display: none; }
+.nav-item {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 8px 20px; cursor: pointer;
+  border: none; background: transparent;
+  color: var(--md-on-surface-var);
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 500;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s; white-space: nowrap;
+  gap: 2px;
+}
+.nav-item:hover { color: var(--md-primary); background: rgba(79,195,247,0.06); }
+.nav-item.active {
+  color: var(--md-primary);
+  border-bottom-color: var(--md-primary);
+  background: rgba(79,195,247,0.08);
+}
+.nav-item .nav-icon { font-size: 18px; }
+.nav-item .nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+
+/* ── CONTENT ── */
+#content { padding: 20px; max-width: 1400px; margin: 0 auto; }
+.tab-pane { display: none; } .tab-pane.active { display: block; }
+
+/* ── CARDS (M3 Surface) ── */
+.card {
+  background: var(--md-surface-1);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--md-outline-var);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--elev-1);
+  transition: box-shadow 0.2s;
+}
+.card:hover { box-shadow: var(--elev-2); }
+.card-title {
+  font-family: var(--font-display);
+  font-size: 16px; font-weight: 700;
+  color: var(--md-on-surface);
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--md-outline-var);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title .title-icon {
+  width: 28px; height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--md-primary-cont);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 16px; }
+
+/* ── STAGE ROWS ── */
+.stage-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--md-outline-var);
+}
+.stage-indicator {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.stage-label { flex: 1; font-size: 14px; }
+.stage-chip {
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: var(--radius-full);
+  letter-spacing: 0.5px; white-space: nowrap;
+}
+.stage-note {
+  font-size: 11px; font-weight: 600;
+  color: var(--md-secondary); letter-spacing: 0.5px;
+  margin-left: 8px;
+}
+
+/* ── RATIO BOX ── */
+.ratio-box {
+  margin-top: 16px; padding: 16px;
+  background: var(--md-surface-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--md-outline-var);
+}
+.ratio-value {
+  font-family: var(--font-display);
+  font-size: 36px; font-weight: 700;
+  color: var(--md-primary);
+}
+.ratio-label { font-size: 11px; color: var(--md-on-surface-dim); letter-spacing: 1px; text-transform: uppercase; }
+.ratio-bar-track {
+  height: 6px; background: var(--md-surface-4);
+  border-radius: var(--radius-full); margin: 10px 0; position: relative;
+}
+.ratio-bar-fill {
+  height: 100%; background: linear-gradient(90deg, var(--md-success), var(--md-primary));
+  border-radius: var(--radius-full); transition: width 1s ease;
+}
+.ratio-bar-marker {
+  position: absolute; top: -5px;
+  width: 2px; height: 16px;
+  background: var(--md-error);
+  border-radius: 1px; left: 50%;
+  box-shadow: 0 0 4px var(--md-error);
+}
+
+/* ── EXPERT ROWS ── */
+.expert-row {
+  display: flex; gap: 12px; padding: 10px 0;
+  border-bottom: 1px solid var(--md-outline-var); align-items: flex-start;
+}
+.expert-name {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+  min-width: 80px; flex-shrink: 0;
+  padding: 2px 8px; border-radius: var(--radius-full);
+  text-align: center;
+}
+.expert-signal { font-size: 13px; color: var(--md-on-surface-var); line-height: 1.5; }
+
+/* ── SAFE HAVEN ── */
+.signal-box {
+  padding: 16px; border-radius: var(--radius-md);
+  border: 1px solid var(--md-outline-var);
+  display: flex; gap: 14px; align-items: center;
+  margin-bottom: 14px; transition: all 0.5s;
+  background: var(--md-surface-2);
+}
+.signal-icon { font-size: 32px; flex-shrink: 0; }
+.signal-title { font-size: 15px; font-weight: 700; letter-spacing: 0.3px; }
+.signal-desc { font-size: 12px; color: var(--md-on-surface-var); margin-top: 2px; }
+.signal-metrics { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 12px; }
+.signal-metric { display: flex; flex-direction: column; gap: 2px; }
+.metric-label { font-size: 10px; color: var(--md-on-surface-dim); text-transform: uppercase; letter-spacing: 1px; }
+.metric-val { font-size: 16px; font-weight: 700; font-family: var(--font-mono); }
+
+/* ── MACRO ROWS ── */
+.macro-row {
+  display: flex; gap: 12px; padding: 8px 0;
+  border-bottom: 1px solid var(--md-outline-var); align-items: flex-start;
+}
+.macro-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.macro-label { font-size: 11px; color: var(--md-on-surface-dim); text-transform: uppercase; letter-spacing: 0.8px; }
+.macro-val { font-size: 14px; font-weight: 600; }
+.macro-note { font-size: 12px; color: var(--md-on-surface-var); margin-top: 2px; }
+
+/* ══════════════════════════════════════════════════════
+   CHARTS TAB — M3 CARD + TRADINGVIEW WIDGET EMBEDS
+══════════════════════════════════════════════════════ */
+.chart-card {
+  background: var(--md-surface-1);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--md-outline-var);
+  margin-bottom: 20px;
+  box-shadow: var(--elev-2);
+  overflow: hidden;
+}
+.chart-header {
+  padding: 14px 20px 0;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px;
+}
+.chart-asset-info { display: flex; align-items: center; gap: 12px; }
+.chart-symbol {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 700;
+  color: var(--md-on-surface);
+}
+.chart-name { font-size: 12px; color: var(--md-on-surface-var); margin-top: 1px; }
+.chart-price-inline {
+  font-family: var(--font-mono);
+  font-size: 18px; font-weight: 700;
+}
+.chart-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* SIGNAL BADGE */
+.signal-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.8px;
+  border: 1px solid;
+  transition: all 0.3s;
+}
+.sig-buy   { background: var(--md-success-cont);  color: var(--md-success);  border-color: var(--md-success); }
+.sig-hold  { background: rgba(255,183,77,0.12);   color: var(--md-secondary);border-color: var(--md-secondary); }
+.sig-sell  { background: var(--md-error-cont);    color: var(--md-error);    border-color: var(--md-error); }
+
+/* TIMEFRAME CHIPS */
+.tf-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.tf-chip {
+  padding: 4px 12px; border-radius: var(--radius-full);
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  background: var(--md-surface-3);
+  border: 1px solid var(--md-outline);
+  color: var(--md-on-surface-var);
+  transition: all 0.15s; white-space: nowrap;
+}
+.tf-chip:hover { background: var(--md-surface-4); color: var(--md-on-surface); }
+.tf-chip.active {
+  background: var(--md-primary-cont);
+  border-color: var(--md-primary);
+  color: var(--md-primary);
+  font-weight: 600;
+}
+
+/* CHART WRAPPER */
+.chart-wrapper { padding: 12px 12px 0; }
+.tradingview-widget-container { border-radius: var(--radius-sm); overflow: hidden; }
+
+/* SIGNAL PANEL UNDER CHART */
+.signal-panel {
+  padding: 14px 20px;
+  background: var(--md-surface-2);
+  border-top: 1px solid var(--md-outline-var);
+  display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;
+}
+.signal-reason {
+  flex: 1; min-width: 200px;
+}
+.signal-reason-title {
+  font-size: 11px; color: var(--md-on-surface-dim);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
+}
+.signal-trigger-list {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.trigger-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--md-on-surface-var);
+}
+.trigger-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── DATA TABLES ── */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  padding: 8px 12px; text-align: left;
+  font-size: 11px; font-weight: 600;
+  color: var(--md-on-surface-dim);
+  letter-spacing: 1px; text-transform: uppercase;
+  border-bottom: 1px solid var(--md-outline-var);
+}
+.data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--md-outline-var);
+  font-family: var(--font-mono); font-size: 13px;
+}
+.data-table tr:hover td { background: rgba(79,195,247,0.03); }
+.trig-row td { background: rgba(129,201,149,0.06) !important; }
+.close-row td { background: rgba(255,183,77,0.06) !important; }
+
+/* ── CHECKLIST ── */
+.check-row {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px solid var(--md-outline-var);
+}
+.check-icon {
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+  border: 1px solid var(--md-outline); background: var(--md-surface-2);
+  transition: all 0.3s;
+}
+.check-text { font-size: 14px; color: var(--md-on-surface-var); }
+.check-note { font-size: 12px; color: var(--md-on-surface-dim); margin-top: 2px; }
+
+/* ── BTC MONITOR ── */
+.btc-price {
+  font-family: var(--font-display);
+  font-size: 48px; font-weight: 700;
+  color: var(--md-primary);
+}
+.btc-level-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px;
+  background: var(--md-surface-2);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px; font-size: 13px;
+  border: 1px solid var(--md-outline-var);
+}
+
+/* ── DATE CARDS ── */
+.dates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.date-card {
+  padding: 16px; border-radius: var(--radius-lg);
+  border: 1px solid; background: var(--md-surface-2);
+  transition: box-shadow 0.2s;
+}
+.date-card:hover { box-shadow: var(--elev-2); }
+.date-badge { font-size: 13px; font-weight: 700; letter-spacing: 1px; font-family: var(--font-mono); }
+.date-label { font-size: 14px; margin-top: 6px; color: var(--md-on-surface); line-height: 1.4; }
+.date-note { font-size: 11px; font-weight: 600; margin-top: 4px; letter-spacing: 0.5px; }
+.date-countdown { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-top: 8px; }
+
+/* ── FAB RELOAD ── */
+.reload-status-bar {
+  margin-top: 14px; padding: 14px 16px;
+  background: var(--md-surface-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--md-outline-var);
+  display: flex; align-items: center; gap: 12px;
+}
+
+/* ── BTC ROTATE TAB ── */
+.rotate-section-title {
+  font-family: var(--font-display);
+  font-size: 13px; font-weight: 700;
+  color: var(--md-on-surface-dim);
+  text-transform: uppercase; letter-spacing: 2px;
+  padding: 20px 0 10px; margin-bottom: 4px;
+  border-bottom: 1px solid var(--md-outline-var);
+  display: flex; align-items: center; gap: 8px;
+}
+.rotate-section-badge {
+  font-size: 10px; padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-weight: 600; letter-spacing: 1px;
+}
+.rotate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px; margin-bottom: 8px;
+}
+.rotate-card {
+  background: var(--md-surface-1);
+  border: 1px solid var(--md-outline-var);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--elev-1);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.rotate-card:hover { box-shadow: var(--elev-2); }
+.rotate-card-header {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; margin-bottom: 10px;
+}
+.rotate-sym {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 700;
+  color: var(--md-primary);
+}
+.rotate-name {
+  font-size: 11px; color: var(--md-on-surface-var);
+  margin-top: 1px;
+}
+.rotate-tier-chip {
+  font-size: 10px; font-weight: 700;
+  padding: 3px 10px; border-radius: var(--radius-full);
+  letter-spacing: 0.8px; white-space: nowrap; flex-shrink: 0;
+}
+.tier-1  { background: rgba(79,195,247,0.12);  color: var(--md-primary);    border: 1px solid var(--md-primary-cont); }
+.tier-2  { background: rgba(129,201,149,0.12); color: var(--md-success);    border: 1px solid rgba(129,201,149,0.3); }
+.tier-3  { background: rgba(255,183,77,0.12);  color: var(--md-secondary);  border: 1px solid rgba(255,183,77,0.3); }
+.tier-ps { background: rgba(179,157,219,0.12); color: #b39ddb;              border: 1px solid rgba(179,157,219,0.3); }
+
+.rotate-price-row {
+  display: flex; align-items: baseline; gap: 8px;
+  margin-bottom: 10px;
+}
+.rotate-price {
+  font-family: var(--font-mono);
+  font-size: 22px; font-weight: 700;
+}
+.rotate-chg { font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+.rotate-desc {
+  font-size: 12px; color: var(--md-on-surface-var);
+  line-height: 1.5; margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--md-outline-var);
+}
+.rotate-signals {
+  display: flex; flex-direction: column; gap: 5px;
+}
+.rotate-signal-row {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; padding: 4px 0;
+}
+.rotate-signal-label { color: var(--md-on-surface-dim); }
+.ab-pill {
+  font-size: 11px; font-weight: 700;
+  padding: 2px 10px; border-radius: var(--radius-full);
+  letter-spacing: 0.5px; white-space: nowrap;
+}
+.ab-above { background: var(--md-success-cont); color: var(--md-success); }
+.ab-below { background: var(--md-error-cont);   color: var(--md-error); }
+.ab-na    { background: var(--md-surface-3);    color: var(--md-on-surface-dim); }
+
+.rotate-alloc {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid var(--md-outline-var);
+}
+.rotate-alloc-label { font-size: 11px; color: var(--md-on-surface-dim); letter-spacing: 0.5px; }
+.rotate-alloc-pct {
+  font-family: var(--font-display);
+  font-size: 18px; font-weight: 700;
+  color: var(--md-primary);
+}
+
+.rotate-reload-bar {
+  background: var(--md-surface-1);
+  border: 1px solid var(--md-outline-var);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px; margin-bottom: 16px;
+  box-shadow: var(--elev-1);
+}
+.rotate-reload-title {
+  font-family: var(--font-display);
+  font-size: 15px; font-weight: 700;
+  color: var(--md-secondary); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.reload-checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+}
+.reload-check-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  background: var(--md-surface-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--md-outline-var);
+  font-size: 12px;
+}
+.reload-check-icon {
+  width: 22px; height: 22px;
+  border-radius: var(--radius-xs);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0;
+  border: 1px solid var(--md-outline);
+  background: var(--md-surface-3);
+  transition: all 0.3s;
+}
+
+/* ── FOOTER ── */
+#footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--md-outline-var);
+  font-size: 11px; color: var(--md-on-surface-dim);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  margin-top: 20px; letter-spacing: 0.3px;
+}
+
+/* ── UTILITY ── */
+::selection { background: var(--md-primary-cont); color: var(--md-primary); }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--md-surface); }
+::-webkit-scrollbar-thumb { background: var(--md-outline); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- APP BAR -->
+<div id="app-bar">
+  <div class="app-bar-leading">
+    <div class="app-bar-icon">M</div>
+    <div>
+      <div class="app-bar-title">Macro Ops</div>
+      <div class="app-bar-subtitle">Iran War · Market Intelligence</div>
+    </div>
+  </div>
+  <div class="app-bar-actions">
+    <div id="api-chip">
+      <div class="dot"></div>
+      <span id="api-text">CONNECTING</span>
+    </div>
+    <span id="upd-time" style="font-size:11px;color:var(--md-on-surface-dim);font-family:var(--font-mono)"></span>
+    <button class="icon-btn ripple-container" onclick="fetchAll()" title="Refresh">↻</button>
+  </div>
+</div>
+
+<!-- TICKER TABLE -->
+<div id="ticker-strip">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:72px">Symbol</th>
+        <th>Name</th>
+        <th style="width:100px">Price</th>
+        <th style="width:85px">Change</th>
+        <th style="width:75px">1D %</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+  </table>
+  <div id="ticker-wrap">
+    <table id="ticker-table">
+      <tbody id="ticker-body">
+        <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--md-on-surface-dim);font-size:12px">Fetching market data…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ALERTS -->
+<div id="alerts">
+  <div id="a-yield" class="alert a-red">   <span class="alert-icon">⚠</span> 10Y Yield approaching Kobeissi 4.5% line — Trump policy blink trigger zone</div>
+  <div id="a-sh"    class="alert a-grn">   <span class="alert-icon">●</span> Soloway signal active — Gold rising / SPY falling — safe haven bid confirmed</div>
+  <div id="a-gold"  class="alert a-amber"> <span class="alert-icon">◆</span> Gold approaching 200D EMA $4,068 — prepare max conviction add</div>
+  <div id="a-ratio" class="alert a-grn">   <span class="alert-icon">●</span> SPY/Gold ratio approaching 0.10 — Cowen reload zone near</div>
+  <div id="a-spy"   class="alert a-red">   <span class="alert-icon">⚠</span> SPY below 200D SMA $660 — bear market technical confirmation active</div>
+</div>
+
+<!-- NAV BAR -->
+<div id="nav">
+  <button class="nav-item active ripple-container" onclick="showTab('overview')">
+    <span class="nav-icon">⬡</span>
+    <span class="nav-label">Overview</span>
+  </button>
+  <button class="nav-item ripple-container" onclick="showTab('charts')">
+    <span class="nav-icon">📈</span>
+    <span class="nav-label">Charts</span>
+  </button>
+  <button class="nav-item ripple-container" onclick="showTab('rotate')">
+    <span class="nav-icon">₿</span>
+    <span class="nav-label">BTC Rotate</span>
+  </button>
+  <button class="nav-item ripple-container" onclick="showTab('levels')">
+    <span class="nav-icon">⊞</span>
+    <span class="nav-label">Levels</span>
+  </button>
+  <button class="nav-item ripple-container" onclick="showTab('framework')">
+    <span class="nav-icon">◎</span>
+    <span class="nav-label">Framework</span>
+  </button>
+  <button class="nav-item ripple-container" onclick="showTab('dates')">
+    <span class="nav-icon">◷</span>
+    <span class="nav-label">Dates</span>
+  </button>
+</div>
+
+<div id="content">
+
+<!-- ══════════ OVERVIEW ══════════ -->
+<div id="tab-overview" class="tab-pane active">
+<div class="grid-2">
+
+  <div class="card">
+    <div class="card-title"><span class="title-icon">⬡</span> Cowen 5-Stage Cascade</div>
+    <div class="stage-row">
+      <div class="stage-indicator" style="background:var(--md-success)"></div>
+      <span class="stage-label" style="color:var(--md-success)">Stage 1 — Retail/speculative decline</span>
+      <span class="stage-chip" style="background:var(--md-success-cont);color:var(--md-success)">✓ Complete</span>
+    </div>
+    <div class="stage-row">
+      <div class="stage-indicator" style="background:var(--md-success)"></div>
+      <span class="stage-label" style="color:var(--md-success)">Stage 2 — Altcoins weaken, BTC dom rises</span>
+      <span class="stage-chip" style="background:var(--md-success-cont);color:var(--md-success)">✓ Complete</span>
+    </div>
+    <div class="stage-row">
+      <div class="stage-indicator" style="background:var(--md-secondary);box-shadow:0 0 6px var(--md-secondary)"></div>
+      <span class="stage-label" style="color:var(--md-secondary)">Stage 3 — Equities weaken vs Gold</span>
+      <span class="stage-chip" style="background:var(--md-secondary-cont);color:var(--md-secondary)">● Active</span>
+    </div>
+    <div class="stage-row">
+      <div class="stage-indicator" style="background:var(--md-secondary);box-shadow:0 0 6px var(--md-secondary)"></div>
+      <span class="stage-label" style="color:var(--md-secondary)">Stage 4 — Dollar/oil tightens liquidity</span>
+      <span class="stage-chip" style="background:var(--md-secondary-cont);color:var(--md-secondary)">● Accelerating</span>
+    </div>
+    <div class="stage-row" style="border:none">
+      <div class="stage-indicator" style="background:var(--md-outline);border:1px solid var(--md-outline)"></div>
+      <span class="stage-label" style="color:var(--md-on-surface-dim)">Stage 5 — Labor market feedback loop</span>
+      <span class="stage-chip" style="background:var(--md-surface-3);color:var(--md-on-surface-dim)">○ Pending</span>
+      <span class="stage-note">◀ Reload signal</span>
+    </div>
+    <div class="ratio-box">
+      <div class="ratio-label">SPY / Gold Ratio</div>
+      <div class="ratio-value" id="ratio-disp">—</div>
+      <div class="ratio-bar-track">
+        <div class="ratio-bar-fill" id="rfill" style="width:0%"></div>
+        <div class="ratio-bar-marker"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--md-on-surface-dim)">
+        <span>0</span><span style="color:var(--md-error)">Target 0.10 ▲</span><span>0.20</span>
+      </div>
+      <div style="font-size:12px;color:var(--md-on-surface-dim);margin-top:6px">Rotate gold → equities at 0.10</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="title-icon">👁</span> Expert Panel Signals</div>
+    <div class="expert-row"><span class="expert-name" style="background:rgba(255,183,77,.12);color:var(--md-secondary)">Cowen</span><span class="expert-signal">SPY/Gold target 0.10. Stage 5 not fired. MVRV sub-zero required for BTC reload. Oct 2025–2026 bear cycle.</span></div>
+    <div class="expert-row"><span class="expert-name" style="background:rgba(255,183,77,.12);color:var(--md-secondary)">Soloway</span><span class="expert-signal">Gold bottom NOT in until safe haven vs oil. SPX bear flag 70% downside. $3,500 outlier target.</span></div>
+    <div class="expert-row"><span class="expert-name" style="background:rgba(129,201,149,.1);color:var(--md-success)">Alden</span><span class="expert-signal">Iran = kinetic war → bigger print. Three-pillar portfolio. Basel eSLR Apr 1 structural bid. Structural bull intact.</span></div>
+    <div class="expert-row"><span class="expert-name" style="background:rgba(129,201,149,.1);color:var(--md-success)">Howell</span><span class="expert-signal">Liquidity peaks mid-2026. BTC follows 13-week lag. Moderate QE H2 2026 needed for reload window.</span></div>
+    <div class="expert-row"><span class="expert-name" style="background:rgba(242,139,130,.1);color:var(--md-error)">Kobeissi</span><span class="expert-signal">10Y 4.5% = Trump blink trigger — Liberation Day pattern. Bond market forces policy, not diplomacy.</span></div>
+    <div class="expert-row" style="border:none"><span class="expert-name" style="background:rgba(129,201,149,.1);color:var(--md-success)">Macleod</span><span class="expert-signal">Silver delivery crisis intensifying. Basel eSLR structural bid. Oliver: $8,500 gold / $300 silver targets.</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="title-icon">◎</span> Gold Safe Haven Detector</div>
+    <div class="signal-box" id="shbox">
+      <span class="signal-icon" id="shico">◌</span>
+      <div>
+        <div class="signal-title" id="shtitle" style="color:var(--md-on-surface-dim)">Signal Inactive</div>
+        <div class="signal-desc" id="shdesc">Gold tracking oil/equities — Soloway bottom not confirmed</div>
+      </div>
+    </div>
+    <div class="signal-metrics">
+      <div class="signal-metric"><span class="metric-label">Gold 1D</span><span class="metric-val" id="sh-gold">—</span></div>
+      <div class="signal-metric"><span class="metric-label">SPY 1D</span><span class="metric-val" id="sh-spy">—</span></div>
+      <div class="signal-metric"><span class="metric-label">Divergence</span><span class="metric-val" id="sh-div">—</span></div>
+      <div class="signal-metric"><span class="metric-label">Status</span><span class="metric-val" id="sh-sig" style="color:var(--md-on-surface-dim)">Inactive</span></div>
+    </div>
+    <div style="margin-top:12px;padding:12px;background:var(--md-surface-2);border-radius:var(--radius-sm);font-size:12px;color:var(--md-on-surface-var);line-height:1.7">
+      Fires when: Gold 1D &gt; 0% AND SPY 1D &lt; −0.5%<br>
+      Confirm: Multiple consecutive sessions of divergence<br>
+      Context: Gold tracked oil 10 straight sessions post-war
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="title-icon">⚡</span> War / Macro Status</div>
+    <div class="macro-row"><div class="macro-dot" style="background:var(--md-error)"></div><div><div class="macro-label">Iran War — Day 25</div><div class="macro-val" style="color:var(--md-error)">Active — No ceasefire framework</div><div class="macro-note">Trump claims talks. IRGC: "fake news." Pakistan back-channel active.</div></div></div>
+    <div class="macro-row"><div class="macro-dot" style="background:var(--md-error)"></div><div><div class="macro-label">Strait of Hormuz</div><div class="macro-val" style="color:var(--md-error)">De facto closed — 21 tankers since Feb 28</div><div class="macro-note">vs 100+/day pre-war. Insurance blockade. Selective transit fees.</div></div></div>
+    <div class="macro-row"><div class="macro-dot" id="tnx-dot" style="background:var(--md-secondary)"></div><div><div class="macro-label">10Y Yield vs 4.5% Danger Line</div><div class="macro-val" id="tnx-val" style="color:var(--md-secondary)">—</div><div class="macro-note">Liberation Day pattern: Trump blinked at 4.5%. Same mechanism applies.</div></div></div>
+    <div class="macro-row"><div class="macro-dot" style="background:var(--md-secondary)"></div><div><div class="macro-label">PMI Flash — Mar 24</div><div class="macro-val" style="color:var(--md-secondary)">GDP 1.0% annualized · CPI 4.0–4.5%</div><div class="macro-note">Employment fell first time in 1 year. Stagflation confirmed.</div></div></div>
+    <div class="macro-row"><div class="macro-dot" style="background:var(--md-secondary)"></div><div><div class="macro-label">Private Credit Stress</div><div class="macro-val" style="color:var(--md-secondary)">Apollo + Ares curbing redemptions</div><div class="macro-note">Stage 4 canary. Collateral seizure precedes public market stress.</div></div></div>
+    <div class="macro-row" style="border:none"><div class="macro-dot" style="background:var(--md-success)"></div><div><div class="macro-label">Basel eSLR — Apr 1</div><div class="macro-val" style="color:var(--md-success)">Structural Treasury bid begins</div><div class="macro-note">Banks freed to hold Treasuries. Alden gradual print mechanism activating.</div></div></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════ CHARTS ══════════ -->
+<div id="tab-charts" class="tab-pane">
+
+  <!-- SPY CHART -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-asset-info">
+        <div>
+          <div class="chart-symbol">S&P 500 <span style="font-size:13px;color:var(--md-on-surface-var)">(ES1! Futures)</span></div>
+          <div class="chart-name">S&P 500 E-mini Futures · 200D SMA · BMSB (20W/21W)</div>
+        </div>
+        <div>
+          <div class="chart-price-inline up" id="spy-price-inline">—</div>
+          <div style="font-size:11px;margin-top:1px" id="spy-chg-inline" class="na">—</div>
+        </div>
+      </div>
+      <div class="chart-controls">
+        <div id="spy-signal" class="signal-badge sig-hold">⏸ HOLD</div>
+        <div class="tf-chips" id="spy-tfs">
+          <span class="tf-chip" data-sym="ES1!" data-id="spy-chart" onclick="changeTF(this,'ES1!','spy-chart')">5m</span>
+          <span class="tf-chip" data-sym="ES1!" data-id="spy-chart" onclick="changeTF(this,'ES1!','spy-chart')">15m</span>
+          <span class="tf-chip" data-sym="ES1!" data-id="spy-chart" onclick="changeTF(this,'ES1!','spy-chart')">30m</span>
+          <span class="tf-chip active" data-sym="ES1!" data-id="spy-chart" onclick="changeTF(this,'ES1!','spy-chart')">1H</span>
+          <span class="tf-chip" data-sym="ES1!" data-id="spy-chart" onclick="changeTF(this,'ES1!','spy-chart')">4H</span>
+          <span class="tf-chip" data-sym="ES1!" data-id="spy-chart" onclick="changeTF(this,'ES1!','spy-chart')">1D</span>
+          <span class="tf-chip" data-sym="ES1!" data-id="spy-chart" onclick="changeTF(this,'ES1!','spy-chart')">1W</span>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrapper">
+      <div id="spy-chart" style="height:420px;"></div>
+    </div>
+    <div class="signal-panel">
+      <div class="signal-reason">
+        <div class="signal-reason-title">Signal Basis — SPY</div>
+        <div class="signal-trigger-list" id="spy-triggers">
+          <div class="trigger-item"><div class="trigger-dot" style="background:var(--md-on-surface-dim)"></div><span>Loading price data…</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOLD CHART -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-asset-info">
+        <div>
+          <div class="chart-symbol">Gold <span style="font-size:13px;color:var(--md-on-surface-var)">(GC1! Futures)</span></div>
+          <div class="chart-name">Gold Continuous Futures · 200D SMA · Weekly BMSB ($4,595–$4,612)</div>
+        </div>
+        <div>
+          <div class="chart-price-inline up" id="gold-price-inline">—</div>
+          <div style="font-size:11px;margin-top:1px" id="gold-chg-inline" class="na">—</div>
+        </div>
+      </div>
+      <div class="chart-controls">
+        <div id="gold-signal" class="signal-badge sig-hold">⏸ HOLD</div>
+        <div class="tf-chips" id="gold-tfs">
+          <span class="tf-chip" data-sym="GC1!" data-id="gold-chart" onclick="changeTF(this,'GC1!','gold-chart')">5m</span>
+          <span class="tf-chip" data-sym="GC1!" data-id="gold-chart" onclick="changeTF(this,'GC1!','gold-chart')">15m</span>
+          <span class="tf-chip" data-sym="GC1!" data-id="gold-chart" onclick="changeTF(this,'GC1!','gold-chart')">30m</span>
+          <span class="tf-chip active" data-sym="GC1!" data-id="gold-chart" onclick="changeTF(this,'GC1!','gold-chart')">1H</span>
+          <span class="tf-chip" data-sym="GC1!" data-id="gold-chart" onclick="changeTF(this,'GC1!','gold-chart')">4H</span>
+          <span class="tf-chip" data-sym="GC1!" data-id="gold-chart" onclick="changeTF(this,'GC1!','gold-chart')">1D</span>
+          <span class="tf-chip" data-sym="GC1!" data-id="gold-chart" onclick="changeTF(this,'GC1!','gold-chart')">1W</span>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrapper">
+      <div id="gold-chart" style="height:420px;"></div>
+    </div>
+    <div class="signal-panel">
+      <div class="signal-reason">
+        <div class="signal-reason-title">Signal Basis — Gold</div>
+        <div class="signal-trigger-list" id="gold-triggers">
+          <div class="trigger-item"><div class="trigger-dot" style="background:var(--md-on-surface-dim)"></div><span>Loading price data…</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BTC CHART -->
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-asset-info">
+        <div>
+          <div class="chart-symbol">Bitcoin <span style="font-size:13px;color:var(--md-on-surface-var)">(BTCUSD)</span></div>
+          <div class="chart-name">Bitcoin / USD · 200W SMA · Weekly BMSB ($83,030–$83,540)</div>
+        </div>
+        <div>
+          <div class="chart-price-inline up" id="btc-price-inline">—</div>
+          <div style="font-size:11px;margin-top:1px" id="btc-chg-inline" class="na">—</div>
+        </div>
+      </div>
+      <div class="chart-controls">
+        <div id="btc-signal" class="signal-badge sig-hold">⏸ HOLD / DCA</div>
+        <div class="tf-chips" id="btc-tfs">
+          <span class="tf-chip" data-sym="BTCUSD" data-id="btc-chart" onclick="changeTF(this,'BTCUSD','btc-chart')">5m</span>
+          <span class="tf-chip" data-sym="BTCUSD" data-id="btc-chart" onclick="changeTF(this,'BTCUSD','btc-chart')">15m</span>
+          <span class="tf-chip" data-sym="BTCUSD" data-id="btc-chart" onclick="changeTF(this,'BTCUSD','btc-chart')">30m</span>
+          <span class="tf-chip active" data-sym="BTCUSD" data-id="btc-chart" onclick="changeTF(this,'BTCUSD','btc-chart')">1H</span>
+          <span class="tf-chip" data-sym="BTCUSD" data-id="btc-chart" onclick="changeTF(this,'BTCUSD','btc-chart')">4H</span>
+          <span class="tf-chip" data-sym="BTCUSD" data-id="btc-chart" onclick="changeTF(this,'BTCUSD','btc-chart')">1D</span>
+          <span class="tf-chip" data-sym="BTCUSD" data-id="btc-chart" onclick="changeTF(this,'BTCUSD','btc-chart')">1W</span>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrapper">
+      <div id="btc-chart" style="height:420px;"></div>
+    </div>
+    <div class="signal-panel">
+      <div class="signal-reason">
+        <div class="signal-reason-title">Signal Basis — Bitcoin</div>
+        <div class="signal-trigger-list" id="btc-triggers">
+          <div class="trigger-item"><div class="trigger-dot" style="background:var(--md-on-surface-dim)"></div><span>Loading price data…</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ BTC ROTATE ══════════ -->
+<div id="tab-rotate" class="tab-pane">
+
+  <!-- RELOAD GATE -->
+  <div class="rotate-reload-bar">
+    <div class="rotate-reload-title">⏳ Reload Gate — ALL must fire before deploying capital</div>
+    <div class="reload-checks">
+      <div class="reload-check-item" id="rg-mvrv">
+        <div class="reload-check-icon" id="rg-mvrv-icon">○</div>
+        <div><div style="color:var(--md-on-surface-var);font-weight:600">MVRV Z-Score below zero</div><div style="color:var(--md-on-surface-dim);font-size:11px">Check Glassnode — primary Cowen signal</div></div>
+      </div>
+      <div class="reload-check-item" id="rg-200w">
+        <div class="reload-check-icon" id="rg-200w-icon">○</div>
+        <div><div style="color:var(--md-on-surface-var);font-weight:600" id="rg-200w-lbl">BTC below 200W SMA $58,893</div><div style="color:var(--md-on-surface-dim);font-size:11px" id="rg-200w-note">Not yet triggered</div></div>
+      </div>
+      <div class="reload-check-item" id="rg-ratio">
+        <div class="reload-check-icon" id="rg-ratio-icon">○</div>
+        <div><div style="color:var(--md-on-surface-var);font-weight:600" id="rg-ratio-lbl">SPY/Gold ratio ≤ 0.10</div><div style="color:var(--md-on-surface-dim);font-size:11px" id="rg-ratio-note">Current: —</div></div>
+      </div>
+      <div class="reload-check-item" id="rg-stage5">
+        <div class="reload-check-icon" id="rg-stage5-icon">○</div>
+        <div><div style="color:var(--md-on-surface-var);font-weight:600">Stage 5 labor signal</div><div style="color:var(--md-on-surface-dim);font-size:11px">Jobless claims >300K trending</div></div>
+      </div>
+      <div class="reload-check-item" id="rg-sh">
+        <div class="reload-check-icon" id="rg-sh-icon">○</div>
+        <div><div style="color:var(--md-on-surface-var);font-weight:600">Gold safe haven confirmed</div><div style="color:var(--md-on-surface-dim);font-size:11px" id="rg-sh-note">Multi-session divergence needed</div></div>
+      </div>
+      <div class="reload-check-item">
+        <div class="reload-check-icon" style="color:var(--md-on-surface-dim)">○</div>
+        <div><div style="color:var(--md-on-surface-var);font-weight:600">Fed pivot / QE signal</div><div style="color:var(--md-on-surface-dim);font-size:11px">Howell: 13-week BTC lag from liquidity turn</div></div>
+      </div>
+    </div>
+    <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-size:12px;color:var(--md-on-surface-dim)">Target Window</span>
+      <span style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--md-secondary)">Q3–Q4 2026</span>
+      <span style="font-size:12px;color:var(--md-on-surface-dim);margin-left:8px">Suggested Allocation</span>
+      <span style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--md-primary)">See tiers below</span>
+    </div>
+  </div>
+
+  <!-- TIER 1 -->
+  <div class="rotate-section-title">
+    <span class="rotate-section-badge tier-1">TIER 1</span>
+    Core BTC Exposure — 45% · IAUM equivalent · Pure cycle beta
+  </div>
+  <div class="rotate-grid" id="rg-tier1"></div>
+
+  <!-- TIER 2 -->
+  <div class="rotate-section-title">
+    <span class="rotate-section-badge tier-2">TIER 2</span>
+    Operating Leverage — 20% · RGLD/AEM equivalent · Toll roads on crypto
+  </div>
+  <div class="rotate-grid" id="rg-tier2"></div>
+
+  <!-- TIER 3 -->
+  <div class="rotate-section-title">
+    <span class="rotate-section-badge tier-3">TIER 3</span>
+    Beta Plays — 15% · Leveraged cycle exposure · High risk/reward
+  </div>
+  <div class="rotate-grid" id="rg-tier3"></div>
+
+  <!-- PICKAXE & SHOVEL -->
+  <div class="rotate-section-title">
+    <span class="rotate-section-badge tier-ps">⛏️ PICKAXE & SHOVEL</span>
+    Infrastructure Enablers — 20% · Power grid + AI/crypto convergence · No BTC price dependency
+  </div>
+  <div class="rotate-grid" id="rg-tierpx"></div>
+
+</div>
+
+<!-- ══════════ LEVELS ══════════ -->
+<div id="tab-levels" class="tab-pane">
+  <div class="card">
+    <div class="card-title"><span class="title-icon">⊞</span> Key Technical Levels & Triggers</div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr><th>Level</th><th>Asset</th><th>Target</th><th>Current</th><th>Distance</th><th>Status</th><th>Significance</th></tr></thead>
+        <tbody id="lv-tbody"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--md-on-surface-dim)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ FRAMEWORK ══════════ -->
+<div id="tab-framework" class="tab-pane">
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title"><span class="title-icon">◎</span> Cycle Bottom Checklist</div>
+    <div style="font-size:12px;color:var(--md-on-surface-dim);margin-bottom:12px">All signals should fire before aggressive risk re-entry</div>
+    <div class="check-row" id="chk-mvrv">
+      <div class="check-icon">○</div>
+      <div><div class="check-text">BTC MVRV Z-Score below zero</div><div class="check-note">Primary Cowen bottom signal — verify Glassnode</div></div>
+    </div>
+    <div class="check-row" id="chk-200w">
+      <div class="check-icon">○</div>
+      <div><div class="check-text" id="c200w">BTC below 200W SMA ($58,893)</div><div class="check-note" id="c200w-n">—</div></div>
+    </div>
+    <div class="check-row" id="chk-claims">
+      <div class="check-icon">○</div>
+      <div><div class="check-text">Jobless claims trending above 300K</div><div class="check-note">First crack in PMI Mar 24 — watch Thu claims</div></div>
+    </div>
+    <div class="check-row" id="chk-ratio">
+      <div class="check-icon">○</div>
+      <div><div class="check-text" id="cratio">SPY/Gold ratio reaches 0.10</div><div class="check-note" id="cratio-n">—</div></div>
+    </div>
+    <div class="check-row" id="chk-safe">
+      <div class="check-icon">○</div>
+      <div><div class="check-text">Gold safe haven signal (multi-day)</div><div class="check-note" id="csafe-n">Gold still tracking oil/equities</div></div>
+    </div>
+    <div class="check-row" style="border:none">
+      <div class="check-icon">○</div>
+      <div><div class="check-text">Fed pivot / QE signal</div><div class="check-note">Howell: 13-week BTC lag from liquidity turn</div></div>
+    </div>
+    <div class="reload-status-bar">
+      <span style="font-size:12px;color:var(--md-on-surface-dim)">Reload Status</span>
+      <span style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--md-secondary);margin-left:8px">Not Yet — Q3–Q4 2026 Target</span>
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center">
+    <div class="card-title" style="text-align:left"><span class="title-icon">₿</span> Bitcoin Cycle Monitor</div>
+    <div class="btc-price" id="btc-big">—</div>
+    <div style="font-size:20px;font-weight:700;margin-top:4px;font-family:var(--font-mono)" id="btc-chg-big">—</div>
+    <div style="font-size:11px;color:var(--md-on-surface-dim);margin-top:6px;letter-spacing:1px;text-transform:uppercase">Cowen 4-Year Cycle Analysis</div>
+    <div style="margin-top:16px;width:100%">
+      <div class="btc-level-row"><span style="color:var(--md-on-surface-var);font-size:12px">200W SMA (Cowen bottom)</span><span style="font-weight:700;color:var(--md-primary)">$58,893</span><span id="d-200w" style="font-size:12px;font-family:var(--font-mono)">—</span></div>
+      <div class="btc-level-row"><span style="color:var(--md-on-surface-var);font-size:12px">Weekly BMSB Lower</span><span style="font-weight:700;color:var(--md-primary)">$83,030</span><span id="d-blo" style="font-size:12px;font-family:var(--font-mono)">—</span></div>
+      <div class="btc-level-row" style="margin-bottom:0"><span style="color:var(--md-on-surface-var);font-size:12px">Weekly BMSB Upper</span><span style="font-weight:700;color:var(--md-primary)">$83,540</span><span id="d-bhi" style="font-size:12px;font-family:var(--font-mono)">—</span></div>
+    </div>
+    <div style="margin-top:14px;padding:12px;background:var(--md-surface-2);border-radius:var(--radius-md);border:1px solid var(--md-outline-var);font-size:12px;color:var(--md-secondary);font-weight:600">
+      Reload: MVRV Z &lt; 0 + Stage 5 Labor + BTC near 200W SMA
+    </div>
+    <div style="margin-top:8px;padding:12px;background:var(--md-surface-2);border-radius:var(--radius-md);border:1px solid var(--md-outline-var);font-size:12px;color:var(--md-on-surface-var);line-height:1.8;text-align:left">
+      Howell: BTC follows global liquidity with 13-week lag<br>
+      Liquidity peaks mid-2026 → reload window Q3-Q4<br>
+      Alden: BTC to outperform gold over next 2-3 years<br>
+      Cowen: bear mkt Oct 2025–Oct 2026 thesis active
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ DATES ══════════ -->
+<div id="tab-dates" class="tab-pane">
+  <div class="card">
+    <div class="card-title"><span class="title-icon">◷</span> Key Dates & Countdown Clocks</div>
+    <div class="dates-grid">
+      <div class="date-card" style="border-color:var(--md-error)"><div class="date-badge" style="color:var(--md-error)">MAR 27</div><div class="date-label">Jobless Claims + OECD</div><div class="date-note" style="color:var(--md-error)">Stage 5 Monitor</div><div class="date-countdown" id="cd-mar27" style="color:var(--md-secondary)">—</div></div>
+      <div class="date-card" style="border-color:var(--md-error)"><div class="date-badge" style="color:var(--md-error)">MAR 28</div><div class="date-label">Iran 5-day pause expires</div><div class="date-note" style="color:var(--md-error)">No deal framework</div><div class="date-countdown" id="cd-mar28" style="color:var(--md-error)">—</div></div>
+      <div class="date-card" style="border-color:var(--md-secondary)"><div class="date-badge" style="color:var(--md-secondary)">APR 1</div><div class="date-label">Basel eSLR effective</div><div class="date-note" style="color:var(--md-secondary)">Treasury bid begins</div><div class="date-countdown" id="cd-apr1" style="color:var(--md-secondary)">—</div></div>
+      <div class="date-card" style="border-color:var(--md-secondary)"><div class="date-badge" style="color:var(--md-secondary)">APR 10</div><div class="date-label">March CPI print</div><div class="date-note" style="color:var(--md-secondary)">Watch for 3%+</div><div class="date-countdown" id="cd-apr10" style="color:var(--md-secondary)">—</div></div>
+      <div class="date-card" style="border-color:var(--md-primary)"><div class="date-badge" style="color:var(--md-primary)">APR 13</div><div class="date-label">⚠️ STRC → BIL ALL ACCOUNTS + Goldman Sachs Q1</div><div class="date-note" style="color:var(--md-primary)">HARD DEADLINE + GS earnings</div><div class="date-countdown" id="cd-apr13" style="color:var(--md-primary)">—</div></div>
+      <div class="date-card" style="border-color:var(--md-tertiary)"><div class="date-badge" style="color:var(--md-tertiary)">APR 14</div><div class="date-label">Bank Earnings — JPM · C · WFC</div><div class="date-note" style="color:var(--md-tertiary)">Stage 4/5 credit stress read + Dimon macro commentary</div><div class="date-countdown" id="cd-apr14" style="color:var(--md-tertiary)">—</div></div>
+      <div class="date-card" style="border-color:var(--md-outline)"><div class="date-badge" style="color:var(--md-on-surface-var)">APR 30</div><div class="date-label">BOJ rate decision</div><div class="date-note" style="color:var(--md-on-surface-dim)">Yen carry unwind risk</div><div class="date-countdown" id="cd-apr30" style="color:var(--md-on-surface-var)">—</div></div>
+      <div class="date-card" style="border-color:var(--md-success)"><div class="date-badge" style="color:var(--md-success)">Q3–Q4</div><div class="date-label">Cowen cycle bottom</div><div class="date-note" style="color:var(--md-success)">THE RELOAD SIGNAL</div><div class="date-countdown" style="color:var(--md-success);font-size:16px">Accumulate dry powder</div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<div id="footer">
+  <span>Not financial advice — educational market monitoring tool</span>
+  <span>Data: Yahoo Finance via proxy (15-min delay) · Auto-refresh 60s</span>
+  <span>Framework: Cowen / Alden / Howell / Soloway / Kobeissi / Macleod</span>
+</div>
+
+<!-- TRADINGVIEW WIDGET SCRIPT -->
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════════════════════
+const TICKERS = [
+  { t:"GC=F",     sym:"GOLD",   name:"Gold Futures",          dec:0, note:"War hedge / safe haven" },
+  { t:"SI=F",     sym:"SILVER", name:"Silver Futures",        dec:2, note:"Delivery crisis — Macleod" },
+  { t:"BZ=F",     sym:"BRENT",  name:"Brent Crude Futures",   dec:2, note:"War premium — Hormuz closed" },
+  { t:"CL=F",     sym:"WTI",    name:"WTI Crude Futures",     dec:2, note:"$100+ = sustained war pricing" },
+  { t:"SPY",      sym:"SPY",    name:"S&P 500 ETF",           dec:2, note:"Rejected 200D SMA $660" },
+  { t:"QQQ",      sym:"QQQ",    name:"Nasdaq 100 ETF",        dec:2, note:"Tech risk-off" },
+  { t:"SH",       sym:"SH",     name:"ProShares Short S&P",   dec:2, note:"Inverse equity hedge" },
+  { t:"BIL",      sym:"BIL",    name:"SPDR 1-3mo T-Bill",     dec:2, note:"Cash equiv / yield" },
+  { t:"TLT",      sym:"TLT",    name:"iShares 20Y+ Treasury", dec:2, note:"Duration / rate sensitive" },
+  { t:"BTC-USD",  sym:"BTC",    name:"Bitcoin",               dec:0, note:"Liquidity barometer — Howell" },
+  { t:"GLD",      sym:"GLD",    name:"SPDR Gold ETF",         dec:2, note:"Gold spot proxy" },
+  { t:"GDX",      sym:"GDX",    name:"VanEck Gold Miners",    dec:2, note:"Miners leading = bullish" },
+  { t:"AEM",      sym:"AEM",    name:"Agnico Eagle Mines",    dec:2, note:"Senior gold miner" },
+  { t:"RGLD",     sym:"RGLD",   name:"Royal Gold",            dec:2, note:"Gold royalty streamer" },
+  { t:"^TNX",     sym:"10Y",    name:"10Y Treasury Yield",    dec:3, sfx:"%", note:"4.5% = Kobeissi line" },
+  { t:"^VIX",     sym:"VIX",    name:"CBOE Volatility Index", dec:2, note:"Elevated = risk-off" },
+  { t:"DX-Y.NYB", sym:"DXY",    name:"US Dollar Index",       dec:3, note:"Rising = liquidity squeeze" },
+];
+
+const KEY_LEVELS = [
+  { lbl:"Gold 200D EMA",       tgt:4068,  tk:"GC=F",    yl:false, dir:"below", note:"Max conviction add zone" },
+  { lbl:"Gold BMSB Lower",     tgt:4595,  tk:"GC=F",    yl:false, dir:"above", note:"Weekly bull confirmation" },
+  { lbl:"Gold BMSB Upper",     tgt:4612,  tk:"GC=F",    yl:false, dir:"above", note:"Full BMSB reclaim" },
+  { lbl:"SPY 200D SMA",        tgt:660,   tk:"SPY",     yl:false, dir:"above", note:"Rejected Monday — bear signal" },
+  { lbl:"SPY 50W SMA",         tgt:642,   tk:"SPY",     yl:false, dir:"above", note:"Next major support" },
+  { lbl:"SPY 100W SMA",        tgt:604,   tk:"SPY",     yl:false, dir:"above", note:"Deep bear support" },
+  { lbl:"10Y Yield Danger",    tgt:4.5,   tk:"^TNX",    yl:true,  dir:"above", note:"Trump blink trigger (Kobeissi)" },
+  { lbl:"Brent $100 War Line", tgt:100,   tk:"BZ=F",    yl:false, dir:"above", note:"Sustained war premium" },
+  { lbl:"BTC 200W SMA",        tgt:58893, tk:"BTC-USD", yl:false, dir:"below", note:"Cowen historical bottom zone" },
+  { lbl:"BTC BMSB Lower",      tgt:83030, tk:"BTC-USD", yl:false, dir:"above", note:"Below = bear territory" },
+  { lbl:"RGLD Add Level",      tgt:210,   tk:"RGLD",    yl:false, dir:"below", note:"Pullback add target" },
+];
+
+const KEY_DATES = [
+  { id:"mar27", d:new Date(2026,2,27) },
+  { id:"mar28", d:new Date(2026,2,28) },
+  { id:"apr1",  d:new Date(2026,3,1)  },
+  { id:"apr10", d:new Date(2026,3,10) },
+  { id:"apr13", d:new Date(2026,3,13) },
+  { id:"apr14", d:new Date(2026,3,14) },
+  { id:"apr30", d:new Date(2026,3,30) },
+];
+
+// ══════════════════════════════════════════════════════════════════════════
+// TRADINGVIEW CHARTS
+// ══════════════════════════════════════════════════════════════════════════
+const TV_TF_MAP = { "5m":"5","15m":"15","30m":"30","1H":"60","4H":"240","1D":"D","1W":"W" };
+const tvWidgets = {};
+
+function buildChart(containerId, symbol, tf) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  // destroy old widget if exists
+  if (tvWidgets[containerId]) {
+    try { tvWidgets[containerId].remove(); } catch(e) {}
+  }
+
+  if (typeof TradingView === 'undefined') {
+    container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--md-on-surface-dim);font-size:13px;flex-direction:column;gap:8px">
+      <span>📡</span><span>TradingView requires an internet connection to load charts.</span>
+      <span style="font-size:11px">Prices still update via data feed.</span></div>`;
+    return;
+  }
+
+  // MA studies: 200D SMA + BMSB (20W ≈ 140D and 21W ≈ 147D)
+  const studies = [
+    { id:"MASimple@tv-basicstudies", inputs:{ length:200 }, overrides:{ "Plot.color":"#4fc3f7","Plot.linewidth":2 } },
+    { id:"MASimple@tv-basicstudies", inputs:{ length:140 }, overrides:{ "Plot.color":"#81c995","Plot.linewidth":2 } },
+    { id:"MASimple@tv-basicstudies", inputs:{ length:147 }, overrides:{ "Plot.color":"#ffb74d","Plot.linewidth":2 } },
+  ];
+
+  const w = new TradingView.widget({
+    container_id: containerId,
+    symbol: symbol,
+    interval: TV_TF_MAP[tf] || "60",
+    timezone: "America/New_York",
+    theme: "dark",
+    style: "1",
+    locale: "en",
+    toolbar_bg: "#151b24",
+    enable_publishing: false,
+    hide_top_toolbar: false,
+    hide_legend: false,
+    hide_side_toolbar: false,
+    allow_symbol_change: false,
+    save_image: false,
+    withdateranges: true,
+    details: false,
+    hotlist: false,
+    calendar: false,
+    studies: studies,
+    overrides: {
+      "paneProperties.background": "#0f1117",
+      "paneProperties.backgroundType": "solid",
+      "paneProperties.vertGridProperties.color": "#1a2130",
+      "paneProperties.horzGridProperties.color": "#1a2130",
+      "scalesProperties.textColor": "#8fa3b8",
+      "mainSeriesProperties.candleStyle.upColor": "#81c995",
+      "mainSeriesProperties.candleStyle.downColor": "#f28b82",
+      "mainSeriesProperties.candleStyle.borderUpColor": "#81c995",
+      "mainSeriesProperties.candleStyle.borderDownColor": "#f28b82",
+      "mainSeriesProperties.candleStyle.wickUpColor": "#81c995",
+      "mainSeriesProperties.candleStyle.wickDownColor": "#f28b82",
+    },
+    loading_screen: { backgroundColor:"#0f1117", foregroundColor:"#4fc3f7" },
+    width: "100%",
+    height: 420,
+    autosize: true,
+  });
+
+  tvWidgets[containerId] = w;
+}
+
+function changeTF(chip, symbol, chartId) {
+  // update chip active state
+  const parent = chip.parentElement;
+  parent.querySelectorAll('.tf-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  const tf = chip.textContent.trim();
+  buildChart(chartId, symbol, tf);
+}
+
+function initCharts() {
+  buildChart('spy-chart',  'ES1!',    '1H');
+  buildChart('gold-chart', 'GC1!',    '1H');
+  buildChart('btc-chart',  'BTCUSD',  '1H');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// BTC ROTATE TAB — STOCK UNIVERSE
+// ══════════════════════════════════════════════════════════════════════════
+const ROTATE_STOCKS = [
+  // ── TIER 1 ──
+  { ticker:"FBTC",  tier:1, sym:"FBTC",  name:"Fidelity Bitcoin ETF",        alloc:"30%",
+    desc:"Lowest-fee Bitcoin ETF. Pure BTC exposure, no counterparty risk beyond ETF wrapper. Core IRA vehicle for BTC reload.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:83030 },
+      { lbl:"Weekly BMSB hi",key:"bmsb_hi",ref:83540 },
+      { lbl:"200W SMA",      key:"200w",  ref:58893  },
+    ]
+  },
+  { ticker:"BTC-USD", tier:1, sym:"BTC",  name:"Bitcoin (Direct DCA)",        alloc:"15%",
+    desc:"Continue daily DCA. Direct hold avoids ETF fees entirely. 1.18 BTC current hold. Add aggressively at MVRV < 0.",
+    levels:[
+      { lbl:"200W SMA",      key:"200w",  ref:58893  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:83030 },
+      { lbl:"Weekly BMSB hi",key:"bmsb_hi",ref:83540 },
+      { lbl:"200D SMA",      key:"200d",  ref:null   },
+    ]
+  },
+  // ── TIER 2 ──
+  { ticker:"COIN",  tier:2, sym:"COIN",  name:"Coinbase Global Inc",          alloc:"12%",
+    desc:"Largest regulated crypto exchange. Toll road on all institutional crypto activity. Base L2 captured 62% of ETH L2 revenue. Clarity Act = institutional on-ramp catalyst.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:null  },
+      { lbl:"50W SMA",       key:"50w",   ref:null  },
+      { lbl:"100W SMA",      key:"100w",  ref:null  },
+    ]
+  },
+  { ticker:"HOOD",  tier:2, sym:"HOOD",  name:"Robinhood Markets",            alloc:"4%",
+    desc:"One-stop fintech app: stocks + crypto + banking + prediction markets. $1.5B buyback program. Less BTC-correlated than COIN, good diversifier. Acquired Bitstamp + WonderFi.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:null  },
+      { lbl:"50W SMA",       key:"50w",   ref:null  },
+      { lbl:"100W SMA",      key:"100w",  ref:null  },
+    ]
+  },
+  { ticker:"BRPHF", tier:2, sym:"GLXY",  name:"Galaxy Digital Holdings",      alloc:"4%",
+    desc:"Institutional crypto bridge. Trading, advisory, asset management, staking, tokenization. OTC in US (BRPHF), listed TSX Canada. Best quarter in company history in Q3 2025.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:null  },
+      { lbl:"50W SMA",       key:"50w",   ref:null  },
+    ]
+  },
+  // ── TIER 3 ──
+  { ticker:"MSTR",  tier:3, sym:"MSTR",  name:"Strategy Inc (MicroStrategy)", alloc:"5%",
+    desc:"Leveraged BTC proxy. ~553K BTC holdings. New CEO Cahillane (sold Kellanova to Mars). STRC preferred is senior to common. Capital structure risk at low BTC prices. Weekly RSI 23 — deeply oversold.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"200W SMA",      key:"200w",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:157.50},
+      { lbl:"50W SMA",       key:"50w",   ref:null  },
+    ]
+  },
+  { ticker:"MARA",  tier:3, sym:"MARA",  name:"MARA Holdings (Marathon)",     alloc:"4%",
+    desc:"Largest BTC miner by hashrate. 53K+ BTC on balance sheet. Partnered with Starwood for 1GW AI data center pivot. 3-5x BTC leverage in both directions.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:null  },
+      { lbl:"50W SMA",       key:"50w",   ref:null  },
+      { lbl:"200W SMA",      key:"200w",  ref:null  },
+    ]
+  },
+  { ticker:"CIFR",  tier:3, sym:"CIFR",  name:"Cipher Mining",                alloc:"3%",
+    desc:"Lowest cost-per-coin miner. JPMorgan upgraded to Overweight. 410MW HPC contracts signed. Pivoting to hybrid BTC + AI data center. 480MW critical-IT capacity by 2026 projected.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:null  },
+      { lbl:"50W SMA",       key:"50w",   ref:null  },
+    ]
+  },
+  { ticker:"CLSK",  tier:3, sym:"CLSK",  name:"CleanSpark Inc",               alloc:"3%",
+    desc:"Most operationally efficient pure miner. JPMorgan Overweight. 200MW HPC potential at Texas site. AI/HPC pivot announced 2026. Zero long-term debt model.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:null  },
+      { lbl:"50W SMA",       key:"50w",   ref:null  },
+    ]
+  },
+  // ── PICKAXE & SHOVEL ──
+  { ticker:"CEG",   tier:"ps", sym:"CEG",  name:"Constellation Energy",       alloc:"5%",
+    desc:"Largest US nuclear fleet (21 reactors, 19,400MW). 20-year Microsoft PPA to restart Three Mile Island. Meta PPA signed. 24/7 carbon-free baseload power for AI hyperscalers. Pure toll road on AI buildout.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:null  },
+      { lbl:"50W SMA",       key:"50w",   ref:null  },
+      { lbl:"100W SMA",      key:"100w",  ref:null  },
+    ]
+  },
+  { ticker:"VST",   tier:"ps", sym:"VST",  name:"Vistra Corp",                alloc:"4%",
+    desc:"2nd largest nuclear fleet. 20-year Meta + AWS PPAs. ERCOT Texas dominance — preferred destination for new data centers. 80%+ analyst Buy rating. Bridge between old economy and AI revolution.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:null  },
+      { lbl:"50W SMA",       key:"50w",   ref:null  },
+      { lbl:"100W SMA",      key:"100w",  ref:null  },
+    ]
+  },
+  { ticker:"WULF",  tier:"ps", sym:"WULF", name:"TeraWulf Inc",               alloc:"3%",
+    desc:"95% zero-carbon energy BTC miner pivoting to AI. Lake Mariner site NYISO Zone A. Morgan Stanley initiated with bullish AI view. ESG hyperscaler preferred clean energy profile. Brownfield mining → premium AI asset.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:null  },
+      { lbl:"50W SMA",       key:"50w",   ref:null  },
+    ]
+  },
+  { ticker:"HUT",   tier:"ps", sym:"HUT",  name:"Hut 8 Mining Corp",          alloc:"2%",
+    desc:"Most advanced managed services pivot. $7B 15-year Fluidstack lease at River Bend. 1,020MW energy capacity + 1,230MW in development across 19 sites. Lean balance sheet (D/E 0.27).",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:null  },
+      { lbl:"50W SMA",       key:"50w",   ref:null  },
+    ]
+  },
+  { ticker:"VRT",   tier:"ps", sym:"VRT",  name:"Vertiv Holdings",            alloc:"3%",
+    desc:"Pure pickaxe. Power distribution + thermal management inside every data center. 122% earnings growth from AI cooling demand surge. Every miner and hyperscaler needs Vertiv equipment. Zero BTC price dependency.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:null  },
+      { lbl:"50W SMA",       key:"50w",   ref:null  },
+      { lbl:"100W SMA",      key:"100w",  ref:null  },
+    ]
+  },
+  { ticker:"OKLO",  tier:"ps", sym:"OKLO", name:"Oklo Inc",                   alloc:"1%",
+    desc:"Sam Altman-backed SMR company. 14GW customer pipeline. Fast reactor + nuclear waste recycling. Breaking ground in Idaho 2026. 2030+ technology — pure optionality. Tiny position size only.",
+    levels:[
+      { lbl:"200D SMA",      key:"200d",  ref:null  },
+      { lbl:"Weekly BMSB lo",key:"bmsb_lo",ref:null  },
+    ]
+  },
+];
+
+// Add rotate tickers to main fetch pool
+const ROTATE_TICKERS_EXTRA = ["FBTC","COIN","HOOD","BRPHF","MSTR","MARA","CIFR","CLSK","CEG","VST","WULF","HUT","VRT","OKLO"];
+
+function renderRotateTab() {
+  const btc   = px["BTC-USD"]?.price;
+  const spy   = px["SPY"]?.price;
+  const gold  = px["GC=F"]?.price;
+  const ratio = (spy && gold) ? spy / gold : null;
+  const gPct  = px["GC=F"]?.pct;
+  const sPct  = px["SPY"]?.pct;
+  const shFire = gPct!=null && sPct!=null && gPct>0 && sPct<-0.5;
+
+  // ── RELOAD GATE checks ──
+  const rgChk = (id, ok, lbl, note) => {
+    const ico = document.getElementById(id+'-icon');
+    const lbl_el = document.getElementById(id+'-lbl');
+    const note_el = document.getElementById(id+'-note');
+    if (!ico) return;
+    ico.textContent = ok ? '✓' : '○';
+    ico.style.background   = ok ? 'rgba(129,201,149,0.15)' : 'var(--md-surface-3)';
+    ico.style.borderColor  = ok ? 'var(--md-success)' : 'var(--md-outline)';
+    ico.style.color        = ok ? 'var(--md-success)' : 'var(--md-on-surface-dim)';
+    const row = document.getElementById(id);
+    if (row) row.style.borderColor = ok ? 'rgba(129,201,149,0.3)' : 'var(--md-outline-var)';
+    if (lbl_el && lbl) lbl_el.textContent = lbl;
+    if (note_el && note) note_el.textContent = note;
+  };
+  rgChk('rg-200w',  btc!=null && btc < 58893,
+    'BTC below 200W SMA $58,893',
+    btc!=null ? `BTC $${f(btc,0)} — ${f(((btc-58893)/58893)*100,1)}% from level` : 'Not yet triggered');
+  rgChk('rg-ratio', ratio!=null && ratio<=0.11,
+    'SPY/Gold ratio ≤ 0.10',
+    ratio!=null ? `Current: ${f(ratio,4)} — target 0.10` : 'Awaiting data');
+  rgChk('rg-sh',    shFire, null,
+    shFire ? 'Active today — confirm multi-session' : 'Gold still tracking oil/equities');
+
+  // ── render stock cards ──
+  const tierContainers = { 1:'rg-tier1', 2:'rg-tier2', 3:'rg-tier3', ps:'rg-tierpx' };
+  const tierClass = { 1:'tier-1', 2:'tier-2', 3:'tier-3', ps:'tier-ps' };
+  const tierLabel = { 1:'Tier 1', 2:'Tier 2', 3:'Tier 3', ps:'Pickaxe & Shovel' };
+
+  // clear containers
+  Object.values(tierContainers).forEach(id => {
+    const el = document.getElementById(id); if(el) el.innerHTML = '';
+  });
+
+  ROTATE_STOCKS.forEach(stock => {
+    const d = px[stock.ticker];
+    const price = d?.price;
+    const pct   = d?.pct;
+    const chg   = d?.chg;
+    const container = document.getElementById(tierContainers[stock.tier]);
+    if (!container) return;
+
+    // compute above/below for each level
+    const levelRows = stock.levels.map(lv => {
+      let ref = lv.ref;
+      let cur = price;
+      // for tickers that map to BTC, use BTC price
+      if (!cur && (stock.ticker === 'FBTC' || stock.ticker === 'BTC-USD')) cur = btc;
+      if (!cur) return `<div class="rotate-signal-row"><span class="rotate-signal-label">${lv.lbl}</span><span class="ab-pill ab-na">—</span></div>`;
+
+      // For null refs (dynamic MAs we can't compute), show price level context
+      if (ref === null) {
+        return `<div class="rotate-signal-row"><span class="rotate-signal-label">${lv.lbl}</span><span class="ab-pill ab-na">N/A — check chart</span></div>`;
+      }
+
+      const above = cur >= ref;
+      return `<div class="rotate-signal-row">
+        <span class="rotate-signal-label">${lv.lbl} <span style="color:var(--md-on-surface-dim);font-family:var(--font-mono)">$${f(ref,0)}</span></span>
+        <span class="ab-pill ${above?'ab-above':'ab-below'}">${above?'▲ ABOVE':'▼ BELOW'}</span>
+      </div>`;
+    }).join('');
+
+    const priceStr = price!=null ? `$${f(price, price < 10 ? 2 : price < 1000 ? 2 : 0)}` : '—';
+    const chgStr   = chg!=null  ? `${chg>=0?'+':''}$${f(Math.abs(chg), price<10?3:2)}` : '';
+    const pctStr   = pct!=null  ? `(${fp(pct)})` : '';
+    const priceColor = pct!=null ? (pct>=0?'var(--md-success)':'var(--md-error)') : 'var(--md-on-surface)';
+
+    container.innerHTML += `
+      <div class="rotate-card">
+        <div class="rotate-card-header">
+          <div>
+            <div class="rotate-sym">${stock.sym}</div>
+            <div class="rotate-name">${stock.name}</div>
+          </div>
+          <span class="rotate-tier-chip ${tierClass[stock.tier]}">${tierLabel[stock.tier]}</span>
+        </div>
+        <div class="rotate-price-row">
+          <span class="rotate-price" style="color:${priceColor}">${priceStr}</span>
+          <span class="rotate-chg" style="color:${priceColor}">${chgStr} ${pctStr}</span>
+        </div>
+        <div class="rotate-desc">${stock.desc}</div>
+        <div class="rotate-signals">${levelRows}</div>
+        <div class="rotate-alloc">
+          <span class="rotate-alloc-label">SUGGESTED ALLOCATION AT RELOAD</span>
+          <span class="rotate-alloc-pct">${stock.alloc}</span>
+        </div>
+      </div>`;
+  });
+}
+
+
+
+const px = {};
+// ── Claude API price fetcher — reliable, no CORS issues ──
+async function fetchAll() {
+  setChip('loading');
+
+  const allTickers = [...new Set([...TICKERS.map(t=>t.t), ...ROTATE_TICKERS_EXTRA])];
+
+  const prompt = `You are a financial data API. Return ONLY a valid JSON object with no extra text, no markdown, no backticks.
+
+For each ticker symbol below, provide the current price, previous close, 1-day change, and 1-day percent change.
+Use real, accurate, current market data. Today is ${new Date().toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}.
+
+Tickers: ${allTickers.join(', ')}
+
+Return exactly this format:
+{
+  "GC=F": { "price": 3123.40, "prev": 3100.00, "chg": 23.40, "pct": 0.75 },
+  "SPY": { "price": 558.22, "prev": 555.00, "chg": 3.22, "pct": 0.58 }
+}
+
+Include ALL tickers. Use null for any you cannot find. Output only the JSON object.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const data = await res.json();
+
+    // extract text from response
+    const textBlock = data.content?.find(b => b.type === 'text');
+    if (!textBlock) throw new Error('No text in response');
+
+    const raw = textBlock.text.replace(/```json|```/g, '').trim();
+    // find the JSON object
+    const start = raw.indexOf('{');
+    const end   = raw.lastIndexOf('}');
+    if (start === -1 || end === -1) throw new Error('No JSON found');
+    const parsed = JSON.parse(raw.slice(start, end + 1));
+
+    const results = {};
+    for (const [ticker, d] of Object.entries(parsed)) {
+      if (d && d.price != null) {
+        results[ticker] = { price: d.price, chg: d.chg ?? 0, pct: d.pct ?? 0 };
+      }
+    }
+
+    Object.assign(px, results);
+    const n = Object.keys(results).length, tot = allTickers.length;
+
+    if (n === 0) {
+      setChip('error', '0 feeds');
+    } else {
+      setChip('live', `${n}/${tot} live`);
+      document.getElementById('upd-time').textContent =
+        new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      render();
+      renderRotateTab();
+    }
+  } catch(err) {
+    console.error('fetchAll error:', err);
+    setChip('error', 'API error — retry');
+  }
+}
+
+function setChip(state, txt) {
+  const chip = document.getElementById('api-chip');
+  const text = document.getElementById('api-text');
+  chip.className = '';
+  chip.classList.add(state === 'live' ? 'live' : state === 'error' ? 'error' : '');
+  text.textContent = txt || (state === 'loading' ? 'Syncing…' : 'No data');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// SIGNAL ENGINE — wired to your trigger framework
+// ══════════════════════════════════════════════════════════════════════════
+function computeSignals(prices) {
+  const gold  = prices["GC=F"]?.price;
+  const spy   = prices["SPY"]?.price;
+  const btc   = prices["BTC-USD"]?.price;
+  const tnx   = prices["^TNX"]?.price;
+  const goldPct = prices["GC=F"]?.pct;
+  const spyPct  = prices["SPY"]?.pct;
+  const ratio   = (spy && gold) ? spy / gold : null;
+
+  // ── SPY SIGNAL ──
+  let spyScore = 0; const spyTriggers = [];
+  if (spy != null) {
+    if (spy < 660)  { spyScore -= 2; spyTriggers.push({t:"SPY below 200D SMA $660 — bear confirmed", c:"dn"}); }
+    else            { spyScore += 1; spyTriggers.push({t:"SPY above 200D SMA $660", c:"up"}); }
+    if (spy < 642)  { spyScore -= 1; spyTriggers.push({t:"SPY below 50W SMA $642 — increasing pressure", c:"dn"}); }
+    if (spy < 604)  { spyScore -= 1; spyTriggers.push({t:"SPY below 100W SMA $604 — deep bear", c:"dn"}); }
+  }
+  if (tnx != null && tnx >= 4.4) { spyScore -= 1; spyTriggers.push({t:`10Y yield ${f(tnx,2)}% — approaching Trump blink line`, c:"dn"}); }
+  if (ratio != null && ratio <= 0.12) { spyScore += 1; spyTriggers.push({t:`SPY/Gold ratio ${f(ratio,4)} — approaching reload zone 0.10`, c:"up"}); }
+  if (spyPct != null && spyPct < -0.5 && goldPct != null && goldPct > 0) { spyScore -= 1; spyTriggers.push({t:"Soloway signal: gold rising while SPY falling", c:"dn"}); }
+  if (spyTriggers.length === 0) spyTriggers.push({t:"Awaiting price data", c:"na"});
+
+  // ── GOLD SIGNAL ──
+  let goldScore = 0; const goldTriggers = [];
+  if (gold != null) {
+    if (gold <= 4068)  { goldScore += 3; goldTriggers.push({t:`Gold at/below 200D EMA $4,068 — MAX CONVICTION ADD`, c:"up"}); }
+    else if (gold <= 4200) { goldScore += 2; goldTriggers.push({t:`Gold near 200D EMA $4,068 — approaching add zone`, c:"up"}); }
+    else               { goldTriggers.push({t:`Gold $${f(gold,0)} — above 200D EMA $4,068`, c:"na"}); }
+    if (gold >= 4595)  { goldScore += 1; spyTriggers.push({t:"Gold above BMSB — weekly bull confirmed", c:"up"}); goldTriggers.push({t:"Gold reclaimed weekly BMSB $4,595 — bull confirmed", c:"up"}); }
+    else               { goldScore -= 1; goldTriggers.push({t:`Gold below BMSB $4,595 — still in correction`, c:"dn"}); }
+    if (goldPct != null && spyPct != null && goldPct > 0 && spyPct < -0.5) {
+      goldScore += 2; goldTriggers.push({t:"Safe haven signal active: gold rising / SPY falling", c:"up"});
+    } else {
+      goldTriggers.push({t:"No safe haven signal yet — gold tracking oil/equities", c:"dn"});
+    }
+  } else { goldTriggers.push({t:"Awaiting price data", c:"na"}); }
+
+  // ── BTC SIGNAL ──
+  let btcScore = 0; const btcTriggers = [];
+  if (btc != null) {
+    if (btc < 58893)    { btcScore += 2; btcTriggers.push({t:`BTC $${f(btc,0)} below 200W SMA $58,893 — Cowen bottom zone`, c:"up"}); }
+    else                { btcScore -= 1; btcTriggers.push({t:`BTC $${f(btc,0)} above 200W SMA $58,893 — not at bottom yet`, c:"na"}); }
+    if (btc < 83030)    { btcScore -= 1; btcTriggers.push({t:"BTC below BMSB $83,030 — bear territory confirmed", c:"dn"}); }
+    else                { btcScore += 1; btcTriggers.push({t:"BTC above BMSB lower — improving", c:"up"}); }
+  }
+  if (ratio != null && ratio > 0.12) { btcScore -= 1; btcTriggers.push({t:`SPY/Gold ratio ${f(ratio,4)} — not at 0.10 yet (Stage 5 pending)`, c:"dn"}); }
+  btcTriggers.push({t:"Daily DCA continues regardless of signal", c:"na"});
+  if (btcTriggers.length === 1) btcTriggers.unshift({t:"Awaiting price data", c:"na"});
+
+  const scoreToSignal = (score, threshBuy, threshSell) => {
+    if (score >= threshBuy)  return 'buy';
+    if (score <= threshSell) return 'sell';
+    return 'hold';
+  };
+
+  return {
+    spy:  { sig: scoreToSignal(spyScore,  2, -2),  triggers: spyTriggers },
+    gold: { sig: scoreToSignal(goldScore, 3, -1),  triggers: goldTriggers },
+    btc:  { sig: scoreToSignal(btcScore,  2, -2),  triggers: btcTriggers },
+  };
+}
+
+function applySignalBadge(elId, sig) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.className = 'signal-badge';
+  if (sig === 'buy')  { el.classList.add('sig-buy');  el.textContent = '▲ BUY / ADD'; }
+  if (sig === 'sell') { el.classList.add('sig-sell'); el.textContent = '▼ REDUCE'; }
+  if (sig === 'hold') { el.classList.add('sig-hold'); el.textContent = '⏸ HOLD'; }
+}
+
+function applyTriggerList(elId, triggers, isBtc) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.innerHTML = triggers.map(({t,c}) =>
+    `<div class="trigger-item">
+      <div class="trigger-dot" style="background:${c==='up'?'var(--md-success)':c==='dn'?'var(--md-error)':'var(--md-on-surface-dim)'}"></div>
+      <span style="color:${c==='up'?'var(--md-success)':c==='dn'?'var(--md-error)':'var(--md-on-surface-var)'}">${t}</span>
+    </div>`
+  ).join('');
+  if (isBtc) el.innerHTML += `<div class="trigger-item"><div class="trigger-dot" style="background:var(--md-primary)"></div><span style="color:var(--md-primary)">BTC reload: MVRV Z &lt; 0 + Stage 5 + near 200W SMA</span></div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════════════════
+const f  = (n,d=2) => n!=null ? Number(n).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}) : "—";
+const fp = n => n!=null ? `${n>0?"+":""}${f(n)}%` : "—";
+const cl = n => n==null ? "na" : n>=0 ? "up" : "dn";
+const daysUntil = d => Math.ceil((d - new Date()) / 86400000);
+
+function render() {
+  const gold  = px["GC=F"]?.price;
+  const spy   = px["SPY"]?.price;
+  const btc   = px["BTC-USD"]?.price;
+  const tnx   = px["^TNX"]?.price;
+  const ratio = (spy && gold) ? spy / gold : null;
+  const gPct  = px["GC=F"]?.pct;
+  const sPct  = px["SPY"]?.pct;
+  const shFire = gPct!=null && sPct!=null && gPct>0 && sPct<-0.5;
+
+  // ── TICKER TABLE ──
+  const tb = document.getElementById("ticker-body");
+  tb.innerHTML = TICKERS.map(({ t, sym, name, dec, sfx="", note }) => {
+    const d = px[t];
+    const pStr = d?.price!=null ? f(d.price,dec)+sfx : "—";
+    const cStr = d?.chg!=null ? (sfx ? f(d.chg,3)+sfx : (d.chg>=0?"+":"")+f(Math.abs(d.chg),dec)) : "—";
+    return `<tr>
+      <td class="t-sym">${sym}</td>
+      <td class="t-name">${name}</td>
+      <td class="t-price ${d?cl(d.chg):"na"}">${pStr}</td>
+      <td class="t-chg ${cl(d?.chg)}">${cStr}</td>
+      <td class="t-pct ${cl(d?.pct)}" style="font-weight:700">${fp(d?.pct)}</td>
+      <td class="t-note">${note}</td>
+    </tr>`;
+  }).join("");
+
+  // ── RATIO ──
+  const rd = document.getElementById("ratio-disp"); if(rd) rd.textContent = ratio!=null ? f(ratio,4) : "—";
+  const rf = document.getElementById("rfill"); if(rf&&ratio!=null) rf.style.width = Math.min((ratio/0.20)*100,100)+"%";
+
+  // ── ALERTS ──
+  const sa = (id,v) => { const e=document.getElementById(id); if(e) e.classList.toggle("show",!!v); };
+  sa("a-yield", tnx!=null&&tnx>=4.4);
+  sa("a-sh",    shFire);
+  sa("a-gold",  gold!=null&&gold<=4480);
+  sa("a-ratio", ratio!=null&&ratio<=0.12);
+  sa("a-spy",   spy!=null&&spy<660);
+
+  // ── SAFE HAVEN ──
+  const sb = document.getElementById("shbox");
+  if (sb) {
+    sb.style.background   = shFire ? "rgba(129,201,149,0.08)" : "var(--md-surface-2)";
+    sb.style.borderColor  = shFire ? "var(--md-success)" : "var(--md-outline-var)";
+    document.getElementById("shico").textContent = shFire ? "◆" : "◌";
+    const st = document.getElementById("shtitle");
+    st.textContent = shFire ? "Signal Active" : "Signal Inactive";
+    st.style.color = shFire ? "var(--md-success)" : "var(--md-on-surface-dim)";
+    document.getElementById("shdesc").textContent = shFire
+      ? "Gold rising while SPY falling — Soloway bottom signal activating"
+      : "Gold still correlated with oil/risk assets — bottom not confirmed";
+  }
+  const sv = (id,v,c) => { const e=document.getElementById(id); if(e){e.textContent=v; if(c)e.className=c;} };
+  sv("sh-gold", fp(gPct), gPct>=0?"metric-val up":"metric-val dn");
+  sv("sh-spy",  fp(sPct), sPct>=0?"metric-val up":"metric-val dn");
+  sv("sh-div",  gPct!=null&&sPct!=null ? f(Math.abs(gPct-sPct),2)+"%" : "—", "metric-val");
+  sv("sh-sig",  shFire ? "Active" : "Inactive", shFire ? "metric-val up" : "metric-val na");
+
+  // ── TNX ──
+  const tm = document.getElementById("tnx-val"), td = document.getElementById("tnx-dot");
+  if (tm && tnx!=null) {
+    tm.textContent = `${f(tnx,2)}% — ${f(4.5-tnx,2)}% from 4.5% danger line`;
+    tm.style.color = tnx>=4.4 ? "var(--md-error)" : "var(--md-secondary)";
+    if (td) td.style.background = tnx>=4.4 ? "var(--md-error)" : "var(--md-secondary)";
+  }
+
+  // ── CHART INLINE PRICES ──
+  const setPriceInline = (priceId, chgId, ticker, dec, sfx="") => {
+    const d = px[ticker];
+    const pe = document.getElementById(priceId); if(pe){ pe.textContent=d?.price!=null?f(d.price,dec)+sfx:"—"; pe.className="chart-price-inline "+(cl(d?.chg)); }
+    const ce = document.getElementById(chgId);   if(ce){ ce.textContent=fp(d?.pct); ce.className=cl(d?.pct); }
+  };
+  setPriceInline("spy-price-inline",  "spy-chg-inline",  "SPY",     2);
+  setPriceInline("gold-price-inline", "gold-chg-inline", "GC=F",    0);
+  setPriceInline("btc-price-inline",  "btc-chg-inline",  "BTC-USD", 0);
+
+  // ── SIGNALS ──
+  const signals = computeSignals(px);
+  applySignalBadge("spy-signal",  signals.spy.sig);
+  applySignalBadge("gold-signal", signals.gold.sig);
+  applySignalBadge("btc-signal",  signals.btc.sig);
+  applyTriggerList("spy-triggers",  signals.spy.triggers,  false);
+  applyTriggerList("gold-triggers", signals.gold.triggers, false);
+  applyTriggerList("btc-triggers",  signals.btc.triggers,  true);
+
+  // ── LEVELS TABLE ──
+  const lb = document.getElementById("lv-tbody");
+  if (lb) {
+    lb.innerHTML = KEY_LEVELS.map(({ lbl, tgt, tk, yl, dir, note }) => {
+      const cur  = px[tk]?.price;
+      const dist = cur!=null ? ((cur-tgt)/tgt)*100 : null;
+      const trig = cur!=null && (dir==="above" ? cur>=tgt : cur<=tgt);
+      const close = dist!=null && Math.abs(dist)<5;
+      const rc   = trig ? "trig-row" : close ? "close-row" : "";
+      const dc   = dist==null ? "var(--md-on-surface-dim)" : Math.abs(dist)<3 ? "var(--md-error)" : Math.abs(dist)<8 ? "var(--md-secondary)" : "var(--md-on-surface-dim)";
+      const fv   = v => yl ? f(v,2)+"%" : "$"+f(v,0);
+      return `<tr class="${rc}">
+        <td style="font-weight:600;color:var(--md-on-surface)">${lbl}</td>
+        <td style="color:var(--md-on-surface-dim)">${tk.replace("=F","").replace("-USD","").replace("^","").replace("DX-Y.NYB","DXY")}</td>
+        <td style="color:var(--md-secondary);font-weight:700">${fv(tgt)}</td>
+        <td style="font-weight:700;color:var(--md-primary)">${cur!=null ? fv(cur) : "—"}</td>
+        <td style="color:${dc};font-weight:${dist!=null&&Math.abs(dist)<3?700:400}">${dist!=null ? fp(dist) : "—"}</td>
+        <td style="color:${trig?"var(--md-success)":close?"var(--md-secondary)":"var(--md-on-surface-dim)"}">${trig ? "● Triggered" : close ? "◆ Close" : "—"}</td>
+        <td style="color:var(--md-on-surface-var);font-size:12px">${note}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  // ── FRAMEWORK CHECKS ──
+  const chk = (id, ok, lbl, note) => {
+    const row = document.getElementById(id); if (!row) return;
+    const box = row.querySelector(".check-icon"), l = row.querySelector(".check-text"), n = row.querySelector(".check-note");
+    box.style.background   = ok ? "rgba(129,201,149,0.12)" : "var(--md-surface-2)";
+    box.style.borderColor  = ok ? "var(--md-success)" : "var(--md-outline)";
+    box.style.color        = ok ? "var(--md-success)" : "var(--md-on-surface-dim)";
+    box.textContent        = ok ? "✓" : "○";
+    if (l) { l.style.color = ok ? "var(--md-success)" : "var(--md-on-surface-var)"; if(lbl) l.textContent = lbl; }
+    if (n && note) n.textContent = note;
+  };
+  chk("chk-200w", btc!=null&&btc<58893, "BTC below 200W SMA ($58,893)", btc!=null ? `BTC $${f(btc,0)} — ${f(((btc-58893)/58893)*100,1)}% from level` : "—");
+  chk("chk-ratio",ratio!=null&&ratio<=0.11,"SPY/Gold ratio at 0.10", ratio!=null ? `Current: ${f(ratio,4)} — target 0.10` : "—");
+  chk("chk-safe", shFire, null, shFire ? "Active today — needs multi-session confirmation" : "Gold still tracking oil/equities");
+
+  // ── BTC MONITOR ──
+  const bb = document.getElementById("btc-big"); if(bb) bb.textContent = btc!=null ? "$"+f(btc,0) : "—";
+  const bc = document.getElementById("btc-chg-big");
+  if (bc) { const c=px["BTC-USD"]?.pct; bc.textContent=fp(c); bc.className=""; bc.style.color=c>=0?"var(--md-success)":"var(--md-error)"; }
+  const bd = (lev,eid) => {
+    const e=document.getElementById(eid);
+    if(e&&btc!=null){ const d=((btc-lev)/lev)*100; e.textContent=fp(d); e.style.color=btc<lev?"var(--md-error)":"var(--md-success)"; }
+  };
+  bd(58893,"d-200w"); bd(83030,"d-blo"); bd(83540,"d-bhi");
+
+  // ── COUNTDOWNS ──
+  KEY_DATES.forEach(({id,d})=>{
+    const e=document.getElementById("cd-"+id); if(!e) return;
+    const n=daysUntil(d);
+    e.textContent = n>0 ? `T-${n} days` : n===0 ? "TODAY" : "Passed";
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TAB NAVIGATION
+// ══════════════════════════════════════════════════════════════════════════
+let chartsInited = false;
+
+function showTab(name) {
+  document.querySelectorAll(".tab-pane").forEach(e => e.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(e => e.classList.remove("active"));
+  document.getElementById("tab-"+name)?.classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(e => {
+    if (e.querySelector(".nav-label")?.textContent.toLowerCase().replace(' ','') === name.replace(' ','')) e.classList.add("active");
+  });
+  if (name === 'charts' && !chartsInited) {
+    chartsInited = true;
+    setTimeout(initCharts, 100);
+  }
+  if (name === 'rotate') renderRotateTab();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════
+fetchAll();
+setInterval(fetchAll, 60000);
+setInterval(() => KEY_DATES.forEach(({id,d})=>{
+  const e=document.getElementById("cd-"+id); if(!e) return;
+  const n=daysUntil(d);
+  e.textContent = n>0 ? `T-${n} days` : n===0 ? "TODAY" : "Passed";
+}), 60000);
+</script>
+</body>
+</html>
